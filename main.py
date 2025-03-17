@@ -1,21 +1,22 @@
-import socket, threading
+import socket
 
-server_socket = socket.socket()
-server_socket.bind(('', 3000))
+PORT = 3000
 
-server_socket.listen()
+s = socket.socket()
+s.bind(('', PORT))
 
-def handle_client(ss: socket):
-    try:
-        response = ss.recv(1024).decode()
-        print(f'Received: {response}')
-    except Exception as e:
-        print(e)
-        ss.close()
-        
+s.listen()
+
+print(f'Listening in on port {PORT}')
+
 while True:
-    conn, address = server_socket.accept()
-    print(f'Connection from: {address}')
+    conn, address = s.accept()
+    print(f'Connected to {address}')
 
-    thread = threading.Thread(target=handle_client, args=(conn,))
-    thread.start()
+    response = conn.recv(1024).decode()
+
+    if response:
+        data = b'This is the operation result.'
+        conn.send(b'HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: ' + f'{len(data)}\r\n\r\n'.encode() + data)
+
+conn.close()
